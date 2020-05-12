@@ -142,12 +142,10 @@ while True:
 				(x, y) = (boxes[i][0], boxes[i][1])
 				(w, h) = (boxes[i][2], boxes[i][3])
 				
-				print (LABELS[classIDs[i]])
 				if (LABELS[classIDs[i]] == "person"):
-					# print (frame)
 					roi=frame[y:y+h,x:x+w]
 					if roi.any():
-						cv2.imwrite("images/t-shirt/2019_%d.jpg" % num_images_built, roi)
+						cv2.imwrite("images/t-shirt/top50_%d.jpg" % num_images_built, roi)
 						num_images_built += 1
 		
 
