@@ -144,9 +144,11 @@ while True:
 				
 				print (LABELS[classIDs[i]])
 				if (LABELS[classIDs[i]] == "person"):
+					# print (frame)
 					roi=frame[y:y+h,x:x+w]
-					cv2.imwrite("images/t-shirt/2019_%d.jpg" % num_images_built, roi)
-					num_images_built += 1
+					if roi.any():
+						cv2.imwrite("images/t-shirt/2019_%d.jpg" % num_images_built, roi)
+						num_images_built += 1
 		
 
 
