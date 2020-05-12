@@ -2,4 +2,8 @@ yolo/images
 yolo/yolo-coco
 yolo/output
 yolo/videos
-
+yolo-object-detection/images
+yolo-object-detection/output
+yolo-object-detection/yolo-coco
+yolo-object-detection/videos
+yolo-object-detection/yolov3.weights
