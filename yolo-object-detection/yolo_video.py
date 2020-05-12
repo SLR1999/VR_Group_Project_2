@@ -35,7 +35,7 @@ COLORS = np.random.randint(0, 255, size=(len(LABELS), 3),
 weightsPath = os.path.sep.join([args["yolo"], "yolov3.weights"])
 configPath = os.path.sep.join([args["yolo"], "yolov3.cfg"])
 count = 0
-num_images_built = 0
+num_images_built = 500
 
 # load our YOLO object detector trained on COCO dataset (80 classes)
 # and determine only the *output* layer names that we need from YOLO
@@ -142,7 +142,6 @@ while True:
 				(x, y) = (boxes[i][0], boxes[i][1])
 				(w, h) = (boxes[i][2], boxes[i][3])
 				
-				print (LABELS[classIDs[i]])
 				if (LABELS[classIDs[i]] == "person"):
 				# draw a bounding box rectangle and label on the frame
 					color = [int(c) for c in COLORS[classIDs[i]]]
@@ -153,7 +152,7 @@ while True:
 						cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
 		
 					roi=frame[y:y+h,x:x+w]
-					cv2.imwrite("images/frame%d.jpg" % num_images_built, roi)
+					cv2.imwrite("images/saree/frame%d.jpg" % num_images_built, roi)
 					num_images_built += 1
 		
 
