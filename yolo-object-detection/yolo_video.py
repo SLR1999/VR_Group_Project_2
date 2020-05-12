@@ -35,6 +35,7 @@ COLORS = np.random.randint(0, 255, size=(len(LABELS), 3),
 weightsPath = os.path.sep.join([args["yolo"], "yolov3.weights"])
 configPath = os.path.sep.join([args["yolo"], "yolov3.cfg"])
 count = 0
+num_images_built = 0
 
 # load our YOLO object detector trained on COCO dataset (80 classes)
 # and determine only the *output* layer names that we need from YOLO
@@ -46,6 +47,7 @@ ln = [ln[i[0] - 1] for i in net.getUnconnectedOutLayers()]
 # initialize the video stream, and
 # frame dimensions
 vs = cv2.VideoCapture(args["input"])
+fps = int(vs.get(cv2.CAP_PROP_FPS))
 (W, H) = (None, None)
 
 # try to determine the total number of frames in the video file
@@ -53,6 +55,7 @@ try:
 	prop = cv2.cv.CV_CAP_PROP_FRAME_COUNT if imutils.is_cv2() \
 		else cv2.CAP_PROP_FRAME_COUNT
 	total = int(vs.get(prop))
+	
 	print("[INFO] {} total frames in video".format(total))
 
 # an error occurred while trying to determine the total
@@ -72,97 +75,97 @@ while True:
 	if not grabbed:
 		break
 
-	# if the frame dimensions are empty, grab them
-	if W is None or H is None:
-		(H, W) = frame.shape[:2]
+	if count%(5*fps) == 0:
 
-	# construct a blob from the input frame and then perform a forward
-	# pass of the YOLO object detector, giving us our bounding boxes
-	# and associated probabilities
-	blob = cv2.dnn.blobFromImage(frame, 1 / 255.0, (416, 416),
-		swapRB=True, crop=False)
-	net.setInput(blob)
-	start = time.time()
-	layerOutputs = net.forward(ln)
-	end = time.time()
+		# if the frame dimensions are empty, grab them
+		if W is None or H is None:
+			(H, W) = frame.shape[:2]
 
-	# initialize our lists of detected bounding boxes, confidences,
-	# and class IDs, respectively
-	boxes = []
-	confidences = []
-	classIDs = []
+		# construct a blob from the input frame and then perform a forward
+		# pass of the YOLO object detector, giving us our bounding boxes
+		# and associated probabilities
+		blob = cv2.dnn.blobFromImage(frame, 1 / 255.0, (416, 416),
+			swapRB=True, crop=False)
+		net.setInput(blob)
+		start = time.time()
+		layerOutputs = net.forward(ln)
+		end = time.time()
 
-	# loop over each of the layer outputs
-	for output in layerOutputs:
-		# loop over each of the detections
-		for detection in output:
-			# extract the class ID and confidence (i.e., probability)
-			# of the current object detection
-			scores = detection[5:]
-			classID = np.argmax(scores)
-			confidence = scores[classID]
+		# initialize our lists of detected bounding boxes, confidences,
+		# and class IDs, respectively
+		boxes = []
+		confidences = []
+		classIDs = []
 
-			# filter out weak predictions by ensuring the detected
-			# probability is greater than the minimum probability
-			if confidence > args["confidence"]:
-				# scale the bounding box coordinates back relative to
-				# the size of the image, keeping in mind that YOLO
-				# actually returns the center (x, y)-coordinates of
-				# the bounding box followed by the boxes' width and
-				# height
-				box = detection[0:4] * np.array([W, H, W, H])
-				(centerX, centerY, width, height) = box.astype("int")
+		# loop over each of the layer outputs
+		for output in layerOutputs:
+			# loop over each of the detections
+			for detection in output:
+				# extract the class ID and confidence (i.e., probability)
+				# of the current object detection
+				scores = detection[5:]
+				classID = np.argmax(scores)
+				confidence = scores[classID]
 
-				# use the center (x, y)-coordinates to derive the top
-				# and and left corner of the bounding box
-				x = int(centerX - (width / 2))
-				y = int(centerY - (height / 2))
+				# filter out weak predictions by ensuring the detected
+				# probability is greater than the minimum probability
+				if confidence > args["confidence"]:
+					# scale the bounding box coordinates back relative to
+					# the size of the image, keeping in mind that YOLO
+					# actually returns the center (x, y)-coordinates of
+					# the bounding box followed by the boxes' width and
+					# height
+					box = detection[0:4] * np.array([W, H, W, H])
+					(centerX, centerY, width, height) = box.astype("int")
 
-				# update our list of bounding box coordinates,
-				# confidences, and class IDs
-				boxes.append([x, y, int(width), int(height)])
-				confidences.append(float(confidence))
-				classIDs.append(classID)
+					# use the center (x, y)-coordinates to derive the top
+					# and and left corner of the bounding box
+					x = int(centerX - (width / 2))
+					y = int(centerY - (height / 2))
 
-	# apply non-maxima suppression to suppress weak, overlapping
-	# bounding boxes
-	idxs = cv2.dnn.NMSBoxes(boxes, confidences, args["confidence"],
-		args["threshold"])
+					# update our list of bounding box coordinates,
+					# confidences, and class IDs
+					boxes.append([x, y, int(width), int(height)])
+					confidences.append(float(confidence))
+					classIDs.append(classID)
 
-	# ensure at least one detection exists
-	if len(idxs) > 0:
-		# loop over the indexes we are keeping
-		for i in idxs.flatten():
-			# extract the bounding box coordinates
-			(x, y) = (boxes[i][0], boxes[i][1])
-			(w, h) = (boxes[i][2], boxes[i][3])
-			
-			print (LABELS[classIDs[i]])
-			if (LABELS[classIDs[i]] == "person"):
-				print ("inside the loop")
-			# draw a bounding box rectangle and label on the frame
-				color = [int(c) for c in COLORS[classIDs[i]]]
-				cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
-				text = "{}: {:.4f}".format(LABELS[classIDs[i]],
-					confidences[i])
-				cv2.putText(frame, text, (x, y - 5),
-					cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
-	
-				roi=frame[y:y+h,x:x+w]
-				cv2.imwrite("images/frame%d.jpg" % count, roi)
-				count += 1
+		# apply non-maxima suppression to suppress weak, overlapping
+		# bounding boxes
+		idxs = cv2.dnn.NMSBoxes(boxes, confidences, args["confidence"],
+			args["threshold"])
+
+		# ensure at least one detection exists
+		if len(idxs) > 0:
+			# loop over the indexes we are keeping
+			for i in idxs.flatten():
+				# extract the bounding box coordinates
+				(x, y) = (boxes[i][0], boxes[i][1])
+				(w, h) = (boxes[i][2], boxes[i][3])
 				
+				print (LABELS[classIDs[i]])
+				if (LABELS[classIDs[i]] == "person"):
+				# draw a bounding box rectangle and label on the frame
+					color = [int(c) for c in COLORS[classIDs[i]]]
+					cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
+					text = "{}: {:.4f}".format(LABELS[classIDs[i]],
+						confidences[i])
+					cv2.putText(frame, text, (x, y - 5),
+						cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+		
+					roi=frame[y:y+h,x:x+w]
+					cv2.imwrite("images/frame%d.jpg" % num_images_built, roi)
+					num_images_built += 1
+		
 
-	
 
-		# some information on processing single frame
-		if total > 0:
-			elap = (end - start)
-			print("[INFO] single frame took {:.4f} seconds".format(elap))
-			print("[INFO] estimated total time to finish: {:.4f}".format(
-				elap * total))
+	count += 1
 
-
+# some information on processing single frame
+if total > 0:
+	elap = (end - start)
+	print("[INFO] single frame took {:.4f} seconds".format(elap))
+	print("[INFO] estimated total time to finish: {:.4f}".format(
+		elap * total))
 
 # release the file pointers
 print("[INFO] cleaning up...")
