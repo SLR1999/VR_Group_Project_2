@@ -1,5 +1,6 @@
 # USAGE
 # python yolo_video.py --input videos/airport.mp4 --yolo yolo-coco
+# Outputs into image folder
 
 # import the necessary packages
 import numpy as np
