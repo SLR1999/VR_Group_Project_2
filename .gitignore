@@ -5,3 +5,5 @@ yolo/videos
 yolo-object-detection/images
 yolo-object-detection/yolo-coco
 yolo-object-detection/videos
+Classification/masked
+Classification/yolo
