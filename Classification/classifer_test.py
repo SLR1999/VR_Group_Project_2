@@ -88,7 +88,7 @@ classifier_list = list(alexnet.classifier)
 
 num_features = classifier_list[-1].in_features
 
-classifier_list[-1] = nn.Linear(num_features, 101)
+classifier_list[-1] = nn.Linear(num_features, 4)
 
 alexnet.classifier = nn.Sequential(classifier_list[0],
                                    classifier_list[1],
