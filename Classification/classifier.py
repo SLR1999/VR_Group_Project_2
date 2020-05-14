@@ -97,7 +97,9 @@ def train_model(model, criterion, optimizer, scheduler, epochs=25):
         time_elapsed // 60, time_elapsed % 60))
     print('Best val Acc: {:4f}'.format(best_acc))
 
-    # load best model weights
+    # save the model wts
+    torch.save(best_model_wt, 'weights/masked_best_model_wts.pth')
+    # Loading the weights
     model.load_state_dict(best_model_wt)
     return model
 
