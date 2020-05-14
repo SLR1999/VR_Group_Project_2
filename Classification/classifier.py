@@ -28,7 +28,7 @@ data_transforms = {
     ])
 }
 
-data_dir = 'masked'
+data_dir = 'masked/data'
 image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x),
                                           data_transforms[x])
                   for x in ['train', 'val']}
@@ -40,7 +40,7 @@ class_names = image_datasets['train'].classes
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-def train_model(model, criterion, optimizer, lr_scheduler, epochs=25):
+def train_model(model, criterion, optimizer, scheduler, epochs=25):
     since = time.time() 
 
     best_model_wt = copy.deepcopy(model.state_dict())
@@ -97,9 +97,8 @@ def train_model(model, criterion, optimizer, lr_scheduler, epochs=25):
         time_elapsed // 60, time_elapsed % 60))
     print('Best val Acc: {:4f}'.format(best_acc))
 
-    torch.save(best_model_wts, 'weights/best_wts.pth')
-    # # load best model weights
-    # model.load_state_dict(best_model_wt)
+    # load best model weights
+    model.load_state_dict(best_model_wt)
     return model
 
 
@@ -113,7 +112,7 @@ classifier_list = list(alexnet.classifier)
 
 num_features = classifier_list[-1].in_features
 
-classifier_list[-1] = nn.Linear(num_features, 4)
+classifier_list[-1] = nn.Linear(num_features, 101)
 
 alexnet.classifier = nn.Sequential(classifier_list[0],
                                    classifier_list[1],
@@ -138,3 +137,4 @@ optimizer = optim.SGD(alexnet.parameters(), lr=0.001, momentum=0.9)
 exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
 
 train_model(alexnet, criterion, optimizer, exp_lr_scheduler, epochs=25)
+
