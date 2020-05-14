@@ -25,4 +25,4 @@ for folder in folders:
     test_des = os.path.join(test_path, folder)
     os.makedirs(test_des)
     for filename in test_images:
-        shutil.move(filename, os.path.join(test_path, test_des))
+        shutil.move(filename, os.path.join(test_path, folder))
