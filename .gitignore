@@ -7,3 +7,4 @@ yolo-object-detection/yolo-coco
 yolo-object-detection/videos
 Classification/masked
 Classification/yolo
+Classification/weights/resnet18.pth
