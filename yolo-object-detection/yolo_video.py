@@ -145,12 +145,12 @@ while True:
 				if (LABELS[classIDs[i]] == "person"):
 					roi=frame[y:y+h,x:x+w]
 					if roi.any():
-						cv2.imwrite("images/shirt/%d.jpg" % num_images_built, roi)
+						cv2.imwrite("images/kurti/outfits1_%d.jpg" % num_images_built, roi)
 						num_images_built += 1
 		
 
 
-	count += 1
+	count += 1 
 
 # some information on processing single frame
 if total > 0:

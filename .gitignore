@@ -10,3 +10,5 @@ Classification/yolo
 Classification/weights/resnet18*
 Classification/yolo_images
 Classification/__pycache__/resnet_model.cpython-37.pyc
+Classification/weights/resnet18.pth
+Classification/weights
