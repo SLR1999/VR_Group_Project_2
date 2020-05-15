@@ -35,10 +35,8 @@ COLORS = np.random.randint(0, 255, size=(len(LABELS), 3),
 weightsPath = os.path.sep.join([args["yolo"], "yolov3.weights"])
 configPath = os.path.sep.join([args["yolo"], "yolov3.cfg"])
 count = 0
-<<<<<<< HEAD
-=======
+
 num_images_built = 301
->>>>>>> 06eda70516ec0bd3f635c4a7858fbb155395a286
 
 # load our YOLO object detector trained on COCO dataset (80 classes)
 # and determine only the *output* layer names that we need from YOLO
