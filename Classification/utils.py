@@ -1,10 +1,14 @@
 import os
 import shutil
 
-path = "masked/"
+<<<<<<< HEAD
+
+=======
+path = "yolo_images/"
 folders = [ item for item in os.listdir(path) if os.path.isdir(os.path.join(path, item)) ]
-train_path = "masked/train"
-test_path = "masked/val"
+train_path = "yolo_images/train"
+test_path = "yolo_images/val"
+>>>>>>> 06eda70516ec0bd3f635c4a7858fbb155395a286
 
 for folder in folders:
     images = []

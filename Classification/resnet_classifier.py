@@ -29,8 +29,8 @@ data_transforms = {
     ]),
 }
 
-PATH = 'weights/resnet18.pth'
-data_dir = 'masked'
+PATH = 'weights/resnet18_yolo.pth'
+data_dir = 'yolo_images'
 image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x),
                                           data_transforms[x])
                   for x in ['train', 'val']}
@@ -131,6 +131,61 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
     # load best model weights
     model.load_state_dict(best_model_wts)
     return model
+
+def test_model(model_path):
+    since = time.time()
+
+    model = TheModelClass(*args, **kwargs)
+    model.load_state_dict(torch.load(PATH))
+    model.eval()   # Set model to evaluate mode
+
+    running_loss = 0.0
+    running_corrects = 0
+
+    # Iterate over data.
+    for inputs, labels in dataloaders[phase]:
+        inputs = inputs.to(device)
+        labels = labels.to(device)
+
+        # zero the parameter gradients
+        optimizer.zero_grad()
+
+        # forward
+        # track history if only in train
+        with torch.set_grad_enabled(phase == 'train'):
+            outputs = model(inputs)
+            _, preds = torch.max(outputs, 1)
+            loss = criterion(outputs, labels)
+
+            # backward + optimize only if in training phase
+            if phase == 'train':
+                loss.backward()
+                optimizer.step()
+
+        # statistics
+        running_loss += loss.item() * inputs.size(0)
+        running_corrects += torch.sum(preds == labels.data)
+    if phase == 'train':
+        scheduler.step()
+
+    epoch_loss = running_loss / dataset_sizes[phase]
+    epoch_acc = running_corrects.double() / dataset_sizes[phase]
+
+    print('{} Loss: {:.4f} Acc: {:.4f}'.format(
+        phase, epoch_loss, epoch_acc))
+
+    # deep copy the model
+    if phase == 'val' and epoch_acc > best_acc:
+        best_acc = epoch_acc
+        best_model_wts = copy.deepcopy(model.state_dict())
+        torch.save(model.state_dict(), PATH)
+
+    print()
+
+    time_elapsed = time.time() - since
+    print('Training complete in {:.0f}m {:.0f}s'.format(
+        time_elapsed // 60, time_elapsed % 60))
+
 
 def visualize_model(model, num_images=6):
     was_training = model.training
