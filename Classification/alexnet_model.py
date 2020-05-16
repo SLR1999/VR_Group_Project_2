@@ -45,7 +45,7 @@ class AlexNet:
             ]),
         }
 
-        # Initialize model to pretrained resnet18 weights
+        # Initialize model to pretrained alexnet weights
         self.model = torchvision.models.alexnet(pretrained=True)
         for param in self.model.parameters():
             param.requires_grad = False
@@ -63,6 +63,7 @@ class AlexNet:
                                    classifier_list[5],
                                    classifier_list[6],
                                    nn.Softmax(1))
+                                   
         print (self.model.parameters())
         self.model = self.model.to(self.device)
 
@@ -103,79 +104,6 @@ class AlexNet:
 
         
         imshow(out, title=[self.class_names[x] for x in classes])
-        
-
-    def train(self, num_epochs=25):
-        
-        self.init_data()
-
-        since = time.time()
-
-        best_model_wts = copy.deepcopy(self.model.state_dict())
-        best_acc = 0.0
-
-        for epoch in range(num_epochs):
-            print('Epoch {}/{}'.format(epoch, num_epochs - 1))
-            print('-' * 10)
-
-            # Each epoch has a training and validation phase
-            for phase in ['train', 'val']:
-                if phase == 'train':
-                    self.model.train()  # Set model to training mode
-                else:
-                    self.model.eval()   # Set model to evaluate mode
-
-                running_loss = 0.0
-                running_corrects = 0
-
-                # Iterate over data.
-                for inputs, labels in self.dataloaders[phase]:
-                    inputs = inputs.to(self.device)
-                    labels = labels.to(self.device)
-
-                    # zero the parameter gradients
-                    self.trainer.zero_grad()
-
-                    # forward
-                    # track history if only in train
-                    with torch.set_grad_enabled(phase == 'train'):
-                        outputs = self.model(inputs)
-                        _, preds = torch.max(outputs, 1)
-                        loss = self.criterion(outputs, labels)
-
-                        # backward + optimize only if in training phase
-                        if phase == 'train':
-                            loss.backward()
-                            self.trainer.step()
-
-                    # statistics
-                    running_loss += loss.item() * inputs.size(0)
-                    running_corrects += torch.sum(preds == labels.data)
-                if phase == 'train':
-                    self.exp_lr_scheduler.step()
-
-                epoch_loss = running_loss / self.dataset_sizes[phase]
-                epoch_acc = running_corrects.double() / self.dataset_sizes[phase]
-
-                print('{} Loss: {:.4f} Acc: {:.4f}'.format(
-                    phase, epoch_loss, epoch_acc))
-
-                # deep copy the model
-                if phase == 'val' and epoch_acc > best_acc:
-                    best_acc = epoch_acc
-                    best_model_wts = copy.deepcopy(self.model.state_dict())
-                    torch.save(self.model.state_dict(), PATH)
-
-            print()
-
-        time_elapsed = time.time() - since
-        print('Training complete in {:.0f}m {:.0f}s'.format(
-            time_elapsed // 60, time_elapsed % 60))
-        print('Best val Acc: {:4f}'.format(best_acc))
-
-        # load best model weights
-        self.model.load_state_dict(best_model_wts)
-        self.visualize_model()
 
     def test(self, image_path):
         import pickle
@@ -246,5 +174,5 @@ class AlexNet:
 if __name__ == "__main__":
     alexnet = AlexNet()
 
-    label = alexnet.test('/home/slr/Desktop/vr/Assignments/VR_Group_Project_2/Classification/yolo/val/kurti/arora_18.jpg')
+    label = alexnet.test('/home/slr/Desktop/vr/Assignments/VR_Group_Project_2/Classification/yolo/val/saree/frame40.jpg')
     print(label)
