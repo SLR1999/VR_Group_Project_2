@@ -25,7 +25,7 @@ def imshow(inp, title=None):
             plt.title(title)
         plt.pause(0.001)  # pause a bit so that plots are updated
 
-PATH = 'weights/yolo_best_model_wts'
+PATH = '/home/swasti/Documents/sem6/VR/Project/VR_Group_Project_2/Classification/weights/alexnet_yolo_new.pth'
 
 class AlexNet:
     def __init__(self):
@@ -64,7 +64,6 @@ class AlexNet:
                                    classifier_list[6],
                                    nn.Softmax(1))
                                    
-        print (self.model.parameters())
         self.model = self.model.to(self.device)
 
         self.criterion = nn.CrossEntropyLoss()
@@ -81,7 +80,7 @@ class AlexNet:
         self.class_names = []
         plt.ion()
 
-    def init_data(self, data_dir = 'yolo'):
+    def init_data(self, data_dir = 'yolo_images'):
         
         self.data_dir = data_dir
         self.image_datasets = {x: datasets.ImageFolder(os.path.join(self.data_dir, x),
@@ -93,7 +92,7 @@ class AlexNet:
         self.dataset_sizes = {x: len(self.image_datasets[x]) for x in ['train', 'val']}
         self.class_names = self.image_datasets['train'].classes
 
-        with open('classes.pkl', 'wb') as f:
+        with open('/home/swasti/Documents/sem6/VR/Project/VR_Group_Project_2/Classification/alexnet_classes.pkl', 'wb') as f:
             pickle.dump(self.class_names, f)
 
         # Get a batch of training data
@@ -105,18 +104,90 @@ class AlexNet:
         
         imshow(out, title=[self.class_names[x] for x in classes])
 
+    def train(self, num_epochs=25):
+        
+        self.init_data()
+
+        since = time.time()
+
+        best_model_wts = copy.deepcopy(self.model.state_dict())
+        best_acc = 0.0
+
+        for epoch in range(num_epochs):
+            print('Epoch {}/{}'.format(epoch, num_epochs - 1))
+            print('-' * 10)
+
+            # Each epoch has a training and validation phase
+            for phase in ['train', 'val']:
+                if phase == 'train':
+                    self.model.train()  # Set model to training mode
+                else:
+                    self.model.eval()   # Set model to evaluate mode
+
+                running_loss = 0.0
+                running_corrects = 0
+
+                # Iterate over data.
+                for inputs, labels in self.dataloaders[phase]:
+                    inputs = inputs.to(self.device)
+                    labels = labels.to(self.device)
+
+                    # zero the parameter gradients
+                    self.trainer.zero_grad()
+
+                    # forward
+                    # track history if only in train
+                    with torch.set_grad_enabled(phase == 'train'):
+                        outputs = self.model(inputs)
+                        _, preds = torch.max(outputs, 1)
+                        loss = self.criterion(outputs, labels)
+
+                        # backward + optimize only if in training phase
+                        if phase == 'train':
+                            loss.backward()
+                            self.trainer.step()
+
+                    # statistics
+                    running_loss += loss.item() * inputs.size(0)
+                    running_corrects += torch.sum(preds == labels.data)
+                if phase == 'train':
+                    self.exp_lr_scheduler.step()
+
+                epoch_loss = running_loss / self.dataset_sizes[phase]
+                epoch_acc = running_corrects.double() / self.dataset_sizes[phase]
+
+                print('{} Loss: {:.4f} Acc: {:.4f}'.format(
+                    phase, epoch_loss, epoch_acc))
+
+                # deep copy the model
+                if phase == 'val' and epoch_acc > best_acc:
+                    best_acc = epoch_acc
+                    best_model_wts = copy.deepcopy(self.model.state_dict())
+                    torch.save(self.model.state_dict(), PATH)
+
+            print()
+
+        time_elapsed = time.time() - since
+        print('Training complete in {:.0f}m {:.0f}s'.format(
+            time_elapsed // 60, time_elapsed % 60))
+        print('Best val Acc: {:4f}'.format(best_acc))
+
+        # load best model weights
+        self.model.load_state_dict(best_model_wts)
+        self.visualize_model()
+
+
     def test(self, image_path):
         import pickle
         from PIL import Image
         from torch.autograd import Variable 
         import cv2
 
-        # since = time.time()
 
-        PATH = '/home/slr/Desktop/vr/Assignments/VR_Group_Project_2/Classification/weights/yolo_best_model_wts.pth'
+        PATH = '/home/swasti/Documents/sem6/VR/Project/VR_Group_Project_2/Classification/weights/alexnet_yolo_new.pth'
         self.model.load_state_dict(torch.load(PATH))
         self.model.eval()   # Set model to evaluate mode
-        with open('/home/slr/Desktop/vr/Assignments/VR_Group_Project_2/Classification/classes.pkl', 'rb') as f:
+        with open('/home/swasti/Documents/sem6/VR/Project/VR_Group_Project_2/Classification/alexnet_classes.pkl', 'rb') as f:
             classes = pickle.load(f)
 
         image = cv2.imread(image_path)
@@ -131,11 +202,6 @@ class AlexNet:
         _, preds = torch.max(output, 1)
         
         [index] = preds.data.cpu().numpy()
-        
-
-        # time_elapsed = time.time() - since
-        # print('Training complete in {:.0f}m {:.0f}s'.format(
-        #     time_elapsed // 60, time_elapsed % 60))
         
         return classes[index]
 
@@ -174,5 +240,10 @@ class AlexNet:
 if __name__ == "__main__":
     alexnet = AlexNet()
 
-    label = alexnet.test('/home/slr/Desktop/vr/Assignments/VR_Group_Project_2/Classification/yolo/val/saree/frame40.jpg')
+    alexnet.train()
+
+    label = alexnet.test('/home/swasti/Documents/sem6/VR/Project/VR_Group_Project_2/Classification/yolo_images/train/saree/frame31.jpg')
     print(label)
+
+# Training complete in 1m 4s
+# Best val Acc: 0.861111

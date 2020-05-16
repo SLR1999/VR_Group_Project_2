@@ -10,7 +10,8 @@ import cv2
 import os
 import sys
 sys.path.append("../") 
-from Classification.resnet_model import ResNet
+# from Classification.resnet_model import ResNet
+from Classification.alexnet_model import AlexNet
 
 image_path = '/home/swasti/Documents/sem6/VR/Project/VR_Group_Project_2/Classification/buffer/image.jpg'
 
@@ -147,8 +148,11 @@ while True:
 				if roi.any():
 					cv2.imwrite(image_path, roi)
 
-					resnet = ResNet()
-					label = resnet.test(image_path)
+					alexnet = AlexNet()
+					label = alexnet.test(image_path)
+
+					# resnet = ResNet()
+					# label = resnet.test(image_path)
 					os.remove(image_path)
 
 					# draw a bounding box rectangle and label on the frame

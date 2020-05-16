@@ -81,7 +81,7 @@ class ResNet:
         self.dataset_sizes = {x: len(self.image_datasets[x]) for x in ['train', 'val']}
         self.class_names = self.image_datasets['train'].classes
 
-        with open('classes.pkl', 'wb') as f:
+        with open('resnet_classes.pkl', 'wb') as f:
             pickle.dump(self.class_names, f)
 
         # Get a batch of training data
@@ -177,7 +177,7 @@ class ResNet:
         PATH = '/home/swasti/Documents/sem6/VR/Project/VR_Group_Project_2/Classification/weights/resnet18_yolo_new.pth'
         self.model.load_state_dict(torch.load(PATH))
         self.model.eval()   # Set model to evaluate mode
-        with open('/home/swasti/Documents/sem6/VR/Project/VR_Group_Project_2/Classification/classes.pkl', 'rb') as f:
+        with open('/home/swasti/Documents/sem6/VR/Project/VR_Group_Project_2/Classification/resnet_classes.pkl', 'rb') as f:
             classes = pickle.load(f)
 
         image = cv2.imread(image_path)
@@ -192,11 +192,6 @@ class ResNet:
         _, preds = torch.max(output, 1)
         
         [index] = preds.data.cpu().numpy()
-        
-
-        # time_elapsed = time.time() - since
-        # print('Training complete in {:.0f}m {:.0f}s'.format(
-        #     time_elapsed // 60, time_elapsed % 60))
         
         return classes[index]
 
@@ -238,3 +233,7 @@ if __name__ == "__main__":
 
     label = resnet.test('/home/swasti/Documents/sem6/VR/Project/VR_Group_Project_2/Classification/yolo_images/train/saree/frame31.jpg')
     print(label)
+
+
+# Training complete in 1m 11s
+# Best val Acc: 0.805556
