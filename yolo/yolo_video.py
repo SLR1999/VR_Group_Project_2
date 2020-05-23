@@ -8,6 +8,12 @@ import imutils
 import time
 import cv2
 import os
+import sys
+sys.path.append("../") 
+# from Classification.resnet_model import ResNet
+from Classification.alexnet_model import AlexNet
+
+image_path = '/home/swasti/Documents/sem6/VR/Project/VR_Group_Project_2/Classification/buffer/image.jpg'
 
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
@@ -137,14 +143,34 @@ while True:
 			# extract the bounding box coordinates
 			(x, y) = (boxes[i][0], boxes[i][1])
 			(w, h) = (boxes[i][2], boxes[i][3])
+			if (LABELS[classIDs[i]] == "person"):
+				roi=frame[y:y+h,x:x+w]
+				if roi.any():
+					cv2.imwrite(image_path, roi)
 
-			# draw a bounding box rectangle and label on the frame
-			color = [int(c) for c in COLORS[classIDs[i]]]
-			cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
-			text = "{}: {:.4f}".format(LABELS[classIDs[i]],
-				confidences[i])
-			cv2.putText(frame, text, (x, y - 5),
-				cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+					alexnet = AlexNet()
+					label = alexnet.test(image_path)
+
+					# resnet = ResNet()
+					# label = resnet.test(image_path)
+					os.remove(image_path)
+
+					# draw a bounding box rectangle and label on the frame
+					color = [int(c) for c in COLORS[classIDs[i]]]
+					cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
+					text = "person wearing {}: {:.4f}".format(label,
+						confidences[i])
+					cv2.putText(frame, text, (x, y - 5),
+						cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+
+			else:
+				# draw a bounding box rectangle and label on the frame
+				color = [int(c) for c in COLORS[classIDs[i]]]
+				cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
+				text = "{}: {:.4f}".format(LABELS[classIDs[i]],
+					confidences[i])
+				cv2.putText(frame, text, (x, y - 5),
+					cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
 
 	# check if the video writer is None
 	if writer is None:

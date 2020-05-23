@@ -28,7 +28,7 @@ data_transforms = {
     ])
 }
 
-data_dir = 'masked/data'
+data_dir = 'yolo'
 image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x),
                                           data_transforms[x])
                   for x in ['train', 'val']}
@@ -97,7 +97,9 @@ def train_model(model, criterion, optimizer, scheduler, epochs=25):
         time_elapsed // 60, time_elapsed % 60))
     print('Best val Acc: {:4f}'.format(best_acc))
 
-    # load best model weights
+    # save the model wts
+    torch.save(best_model_wt, 'weights/yolo_best_model_wts.pth')
+    # Loading the weights
     model.load_state_dict(best_model_wt)
     return model
 

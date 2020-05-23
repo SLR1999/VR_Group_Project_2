@@ -1,10 +1,18 @@
 import os
 import shutil
 
+<<<<<<< HEAD
 path = "/home/ananya/Documents/VR/assignments/group2_project_data/images/yolo/"
 folders = [ item for item in os.listdir(path) if os.path.isdir(os.path.join(path, item)) ]
 train_path = "/home/ananya/Documents/VR/assignments/group2_project_data/images/yolo/train"
 test_path = "/home/ananya/Documents/VR/assignments/group2_project_data/images/yolo/val"
+=======
+
+path = "yolo_images/"
+folders = [ item for item in os.listdir(path) if os.path.isdir(os.path.join(path, item)) ]
+train_path = "yolo_images/train"
+test_path = "yolo_images/val"
+>>>>>>> 1b7cd3ec376c9eaf3d9a5f61be516a8252b9aa12
 
 for folder in folders:
     images = []

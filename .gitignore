@@ -7,4 +7,9 @@ yolo-object-detection/yolo-coco
 yolo-object-detection/videos
 Classification/masked
 Classification/yolo
+Classification/weights/resnet18*
+Classification/yolo_images
+Classification/__pycache__/resnet_model.cpython-37.pyc
 Classification/weights/resnet18.pth
+Classification/weights
+Classification/__pycache__/alexnet_model.cpython-37.pyc

@@ -35,7 +35,8 @@ COLORS = np.random.randint(0, 255, size=(len(LABELS), 3),
 weightsPath = os.path.sep.join([args["yolo"], "yolov3.weights"])
 configPath = os.path.sep.join([args["yolo"], "yolov3.cfg"])
 count = 0
-num_images_built = 500
+
+num_images_built = 301
 
 # load our YOLO object detector trained on COCO dataset (80 classes)
 # and determine only the *output* layer names that we need from YOLO
@@ -145,12 +146,12 @@ while True:
 				if (LABELS[classIDs[i]] == "person"):
 					roi=frame[y:y+h,x:x+w]
 					if roi.any():
-						cv2.imwrite("images/t-shirt/top50_%d.jpg" % num_images_built, roi)
+						cv2.imwrite("images/kurti/back_%d.jpg" % num_images_built, roi)
 						num_images_built += 1
 		
 
 
-	count += 1
+	count += 1 
 
 # some information on processing single frame
 if total > 0:
